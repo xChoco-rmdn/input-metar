@@ -72,3 +72,8 @@ class MetarReader:
                     'cloud_subtype': cloud_subtype if cloud_subtype else None
                 })
             self.parsed_metar['clouds'] = clouds
+
+    # Fungsi tambahan untuk memanggil MetarReader dari luar modul
+    def read_metar_code(metar_code):
+        reader = MetarReader(metar_code)
+        return reader.parse()

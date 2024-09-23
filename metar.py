@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 from browsermanager import BrowserManager
+from metarreader import read_metar_code
+from nosig_reader import MetarReader
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,7 +37,7 @@ def handle_cloud_selection(page, cloud_type: str, cloud_subtype: str, cloud_heig
     if not okta_value:
         logging.error("Invalid cloud type provided.")
         return
-    if cloud_subtype == None:
+    if not cloud_subtype:
         cloud_subtype = "-"
 
     try:
@@ -52,44 +54,17 @@ def handle_cloud_selection(page, cloud_type: str, cloud_subtype: str, cloud_heig
         logging.error(f"Error during cloud selection: {e}")
 
 
-user_input = {
-    'day': '23',
-    'hour': '12',
-    'minute': '00',
-    'wind_direction': '120',
-    'wind_speed': '05',
-    'visibility': '10000',
-    'temperature': '24',
-    'dew_point': '18',
-    'pressure': '1011',
-    'clouds': [
-        {
-            'cloud_type': 'SCT',  # Scattered clouds
-            'cloud_height': 2000,  # 2000 feet
-            'cloud_subtype': None  # No cloud subtype
-        }
-    ],
-    'trend': 'NOSIG'
-}
-
-input_day = user_input['day']
-cloud_type = user_input['clouds'][0]['cloud_type']
-cloud_height = user_input['clouds'][0]['cloud_height']
-
-if cloud_type not in ["FEW", "SCT", "BKN", "OVC"]:
-    logging.error("Invalid cloud type. Please enter one of the following: FEW, SCT, BKN, OVC.")
-
-cloud_subtype = user_input['clouds'][0]['cloud_subtype']
-
-# Define user data directory and the target URL
-user_data_dir = "./user_data"
-url = "https://bmkgsatu.bmkg.go.id/meteorologi/metarspeci"
-
-# Create an instance of BrowserManager and start the browser
-manager = BrowserManager(user_data_dir=user_data_dir, headless=False)
-
-def fill_form(page, user_input, input_day, cloud_type, cloud_subtype, cloud_height):
+def fill_form(page, user_input):
     try:
+
+        user_input = "METAR WADS 231000Z 31008KT 9000 SCT018 29/25 Q1009 NOSIG="
+        parsed_metar = read_metar_code(user_input)
+        # Extract data from parsed METAR
+        input_day = user_input['day']
+        cloud_type = user_input['clouds'][0]['cloud_type']
+        cloud_height = user_input['clouds'][0]['cloud_height']
+        cloud_subtype = user_input['clouds'][0]['cloud_subtype']
+
         # Step 1: Kode stasiun
         logging.info("Filling station code...")
         page.wait_for_load_state("networkidle")
@@ -164,12 +139,23 @@ def fill_form(page, user_input, input_day, cloud_type, cloud_subtype, cloud_heig
 
     except Exception as e:
         logging.error(f"Error filling form: {e}")
-    input("say hello")
 
 if __name__ == "__main__":
+
+    # Parse the METAR using MetarReader
+    metar_code = "METAR WADS 231000Z 31008KT 9000 SCT018 29/25 Q1009 NOSIG="
+    parsed_metar = MetarReader(metar_code).parse()
+
+    # Define user data directory and the target URL
+    user_data_dir = "./user_data"
+    url = "https://bmkgsatu.bmkg.go.id/meteorologi/metarspeci"
+
+    # Create an instance of BrowserManager and start the browser
+    manager = BrowserManager(user_data_dir=user_data_dir, headless=False)
+
     try:
         manager.start_browser(url)
         page = manager.page
-        fill_form(page, user_input, input_day, cloud_type, cloud_subtype, cloud_height)
+        fill_form(page, parsed_metar)  # Pass the parsed_metar as user_input
     finally:
         manager.stop_browser()
