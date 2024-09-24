@@ -1,12 +1,10 @@
 import logging
 from datetime import datetime
 from browsermanager import BrowserManager
-from metarreader import read_metar_code
 from nosig_reader import MetarReader
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 def get_custom_date_selector(input_day: str) -> str:
     current_month = datetime.now().month
@@ -57,8 +55,6 @@ def handle_cloud_selection(page, cloud_type: str, cloud_subtype: str, cloud_heig
 def fill_form(page, user_input):
     try:
 
-        user_input = "METAR WADS 231000Z 31008KT 9000 SCT018 29/25 Q1009 NOSIG="
-        parsed_metar = read_metar_code(user_input)
         # Extract data from parsed METAR
         input_day = user_input['day']
         cloud_type = user_input['clouds'][0]['cloud_type']
@@ -137,13 +133,15 @@ def fill_form(page, user_input):
         logging.info("Form preview completed.")
         # Uncomment to submit: page.get_by_role("button", name="Submit").click()
 
+        input("heelo")
+
     except Exception as e:
         logging.error(f"Error filling form: {e}")
 
 if __name__ == "__main__":
 
     # Parse the METAR using MetarReader
-    metar_code = "METAR WADS 231000Z 31008KT 9000 SCT018 29/25 Q1009 NOSIG="
+    metar_code = input("Masukan Sandi Metar : ")
     parsed_metar = MetarReader(metar_code).parse()
 
     # Define user data directory and the target URL
@@ -155,7 +153,7 @@ if __name__ == "__main__":
 
     try:
         manager.start_browser(url)
-        page = manager.page
-        fill_form(page, parsed_metar)  # Pass the parsed_metar as user_input
+        browser_page = manager.page
+        fill_form(browser_page, parsed_metar)  # Pass the parsed_metar as user_input
     finally:
         manager.stop_browser()
