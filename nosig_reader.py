@@ -33,10 +33,22 @@ class MetarReader:
             self.parsed_metar['wind_speed'] = wind_match.group(2)
 
     def read_visibility(self):
-        visibility_regex = r'(\d{4})'
+        # Regex pattern for visibility
+        visibility_regex = r'(\d{4})\s'
+
+        # Search for visibility value in METAR code
         visibility_match = re.search(visibility_regex, self.metar_code)
+
         if visibility_match:
-            self.parsed_metar['visibility'] = visibility_match.group(1)
+            # Extract the visibility value
+            visibility_value = visibility_match.group(1)
+
+            # Check if the visibility value is '9999' (representing 10000 meters)
+            if visibility_value == '9999':
+                visibility_value = '10000'
+
+            # Store the parsed visibility value
+            self.parsed_metar['visibility'] = visibility_value
 
     def read_temperature(self):
         temp_regex = r'(\d{2})/(\d{2})'

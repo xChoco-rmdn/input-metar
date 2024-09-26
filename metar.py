@@ -6,6 +6,7 @@ from nosig_reader import MetarReader
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 def get_custom_date_selector(input_day: str) -> str:
     current_month = datetime.now().month
     current_year = datetime.now().year
@@ -131,29 +132,76 @@ def fill_form(page, user_input):
         logging.info("Clicking preview button...")
         page.get_by_role("button", name="Preview").click()
         logging.info("Form preview completed.")
-        # Uncomment to submit: page.get_by_role("button", name="Submit").click()
-
-        input("heelo")
+        page.get_by_role("button", name="Submit").click()
 
     except Exception as e:
         logging.error(f"Error filling form: {e}")
 
-if __name__ == "__main__":
 
-    # Parse the METAR using MetarReader
-    metar_code = input("Masukan Sandi Metar : ")
-    parsed_metar = MetarReader(metar_code).parse()
+def process_metar_line(browser_page, metar_code):
+    """Processes a single METAR code, fills the form, and handles errors."""
+    if metar_code.strip():
+        try:
+            # Parse the METAR code
+            parsed_metar = MetarReader(metar_code.strip()).parse()
+            # Fill the form with parsed METAR data
+            fill_form(browser_page, parsed_metar)
+            logging.info(f"Finished processing METAR code: {metar_code}")
+        except Exception as e:
+            logging.error(f"Error processing METAR code '{metar_code}': {e}")
 
+
+def reload_browser_page(manager, browser_page):
+    """Reloads the browser page and ensures the page is fully loaded before continuing."""
+    try:
+        # Reload the page
+        manager.reload_page()
+        # Wait for the page to fully load
+        browser_page.wait_for_load_state('networkidle')
+        logging.info("Page fully loaded after reload.")
+
+        # Add a short delay to ensure page stability
+        browser_page.wait_for_timeout(3000)  # Wait for 3 seconds
+        logging.info("Page reloaded successfully for the next METAR code.")
+    except Exception as reload_error:
+        logging.error(f"Error reloading page: {reload_error}")
+
+
+def handle_user_input(manager, browser_page):
+    """Handles the user input, processes multiple METAR codes, and reloads the page after each one."""
+    while True:
+        # Get METAR input from the user
+        metar_input = input("Masukan beberapa baris METAR (or type 'exit' to quit): ")
+        if metar_input.lower() == 'exit':  # Check if the user wants to exit
+            break
+
+        # Split the input into multiple lines and process each one
+        metar_lines = metar_input.strip().split("\n")
+
+        for metar_code in metar_lines:
+            process_metar_line(browser_page, metar_code)  # Process each METAR line
+            reload_browser_page(manager, browser_page)  # Reload the page after each METAR code
+
+        logging.info("Waiting for the next input...")
+
+
+def run_process():
+    """Main function to set up the browser and start the loop."""
     # Define user data directory and the target URL
     user_data_dir = "./user_data"
     url = "https://bmkgsatu.bmkg.go.id/meteorologi/metarspeci"
 
-    # Create an instance of BrowserManager and start the browser
+    # Start the browser
     manager = BrowserManager(user_data_dir=user_data_dir, headless=False)
+    manager.start_browser(url)
+    browser_page = manager.page
 
     try:
-        manager.start_browser(url)
-        browser_page = manager.page
-        fill_form(browser_page, parsed_metar)  # Pass the parsed_metar as user_input
+        handle_user_input(manager, browser_page)  # Main loop for handling user input
     finally:
-        manager.stop_browser()
+        manager.stop_browser()  # Stop the browser when done
+        logging.info("Browser stopped successfully.")
+
+
+if __name__ == "__main__":
+    run_process()

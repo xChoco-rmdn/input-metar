@@ -43,7 +43,10 @@ class BrowserManager:
             )
 
             # Open a new page and navigate to the URL
-            self.page = self.browser.new_page()
+            if len(self.browser.pages) > 0:
+                self.page = self.browser.pages[0]
+            else:
+                self.page = self.browser.new_page()
             self.page.goto(url)
 
             logging.info(f"Browser started and navigated to {url}")
@@ -89,3 +92,17 @@ class BrowserManager:
 
         except Exception as e:
             logging.error(f"Failed to stop the browser: {e}")
+
+    def reload_page(self):
+        """
+        Reload the current page in the browser.
+        """
+        try:
+            if self.page:
+                self.page.reload()
+                logging.info("Page reloaded successfully.")
+            else:
+                logging.error("No page found to reload.")
+        except Exception as e:
+            logging.error(f"Failed to reload the page: {e}")
+

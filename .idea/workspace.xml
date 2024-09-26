@@ -8,7 +8,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/input-metar.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/input-metar.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metar.py" beforeDir="false" afterPath="$PROJECT_DIR$/metar.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +32,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/xChoco-rmdn/input-metar&quot;,
+    &quot;url&quot;: &quot;https://github.com/xChoco-rmdn/input-metar.git&quot;,
     &quot;accountId&quot;: &quot;d8b0465b-529f-43fb-bda7-14472925d5d9&quot;
   }
 }</component>
